@@ -11,6 +11,8 @@ using System;
 
 public class DownloadGame : MonoBehaviour
 {
+#region Requirements
+
     public string Starturl;
     string CurrentFile;
     public static string Zipfile;
@@ -22,7 +24,7 @@ public class DownloadGame : MonoBehaviour
     public GameObject Exitbutton, installscreen;
     public string[] Files;
     string TempSavePath = (Browser.Savefolder + @"temp\");
-
+#endregion
 
 
     public void StartDownloader()
@@ -36,7 +38,7 @@ public class DownloadGame : MonoBehaviour
     }
 
 
-    #region Download
+#region Downloader
     public void SyncFileArray()
     {
 
@@ -44,9 +46,9 @@ public class DownloadGame : MonoBehaviour
         Files = new string[ArraySizeINT];
     }
    
-    void CheckFile()
+    void GetFileLocations()
     {
-        
+
         progressBar.value = 0;
         WebClient client = new WebClient();
         Debug.Log("current : " + CurrentFile);
@@ -55,38 +57,7 @@ public class DownloadGame : MonoBehaviour
         TempSavePath = savePath;
         Uri url = new Uri(Starturl + CurrentFile);
         Debug.Log(url);
-        string CompleteFileLocation = savePath + CurrentFile;
-        if (File.Exists(CompleteFileLocation))
-        {
-            Debug.Log("bestaat al ");
-            var LocalfileInfo = new System.IO.FileInfo(CompleteFileLocation);
-
-
-
-            StartCoroutine(GetRemoteFileSize(Starturl + CurrentFile, (size) =>
-            {
-                if (size == LocalfileInfo.Length)
-                {
-                    DownloadNextFile();
-                    Debug.Log(CurrentFile + "  remote Size: " + size + "  local size " + LocalfileInfo.Length);
-                }
-                else
-                {
-                    StartFileDownload(client, savePath, url);
-                }
-            }));
-        }
-        else
-        {
-            StartFileDownload(client, savePath, url);
-        }
-    }
-
-    private void StartFileDownload(WebClient client, string savePath, Uri url)
-    {
-        client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
-        client.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadFileCompleted);
-        client.DownloadFileAsync(url, savePath + CurrentFile);
+        DoesFileExist(client, savePath, url);
     }
 
     IEnumerator GetRemoteFileSize(string url, Action<long> resut)
@@ -108,11 +79,35 @@ public class DownloadGame : MonoBehaviour
         }
     }
 
-    private void DownloadProgressCallback(object sender, DownloadProgressChangedEventArgs e)
+    private void DoesFileExist(WebClient client, string savePath, Uri url)
     {
-        
-        progressBar.value = (e.ProgressPercentage);
+        string CompleteFileLocation = savePath + CurrentFile;
+        if (File.Exists(CompleteFileLocation))
+        {
+            var LocalfileInfo = new System.IO.FileInfo(CompleteFileLocation);
+            StartCoroutine(GetRemoteFileSize(Starturl + CurrentFile, (size) =>
+            {
+                if (size == LocalfileInfo.Length)
+                {
+                    DownloadNextFile();
+                }
+                else
+                {
+                    StartFileDownload(client, savePath, url);
+                }
+            }));
+        }
+        else
+        {
+            StartFileDownload(client, savePath, url);
+        }
+    }
 
+    private void StartFileDownload(WebClient client, string savePath, Uri url)
+    {
+        client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
+        client.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadFileCompleted);
+        client.DownloadFileAsync(url, savePath + CurrentFile);
     }
 
     void DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
@@ -121,7 +116,8 @@ public class DownloadGame : MonoBehaviour
         if (e.Error == null)
         {
             DownloadNextFile();
-        }else if (e.Error.Message.Contains("Could not find a part of the path"))
+        }
+        else if (e.Error.Message.Contains("Could not find a part of the path"))
         {
             //error message can't create temp folder
             ErrorMessageText.text = "Kan tijdelijke folder niet aanmaken";
@@ -141,13 +137,13 @@ public class DownloadGame : MonoBehaviour
     {
         if (i < (Files.Length))
         {
-            
-            InstallText.text = ("Downloaden van bestand " + (i+1) + " van de " + Files.Length);
+
+            InstallText.text = ("Downloaden van bestand " + (i + 1) + " van de " + Files.Length);
             CurrentFile = Files[i++];
             Debug.Log(CurrentFile);
-            CheckFile();
-            
-            
+            GetFileLocations();
+
+
         }
         else
         {
@@ -158,7 +154,17 @@ public class DownloadGame : MonoBehaviour
 
 
     }
-    public void ExitInstallButton()
+
+    #region callback and exit fuctions
+
+    private void DownloadProgressCallback(object sender, DownloadProgressChangedEventArgs e)
+    {
+        
+        progressBar.value = (e.ProgressPercentage);
+
+    }
+
+     public void ExitInstallButton()
     {
 
         Exitbutton.SetActive(false);
@@ -169,6 +175,7 @@ public class DownloadGame : MonoBehaviour
 
     }
 
+    #endregion
 
     void DownloadDone()
 
@@ -180,9 +187,9 @@ public class DownloadGame : MonoBehaviour
         unzipper.CallUnzip();
     }
 
-    #endregion
+#endregion
     
-    #region Cleanup Temp Items
+#region Cleanup Temp Items after install
 
     public void CleanUp()
     {
@@ -212,6 +219,6 @@ public class DownloadGame : MonoBehaviour
         File.Delete(TempSavePath + F);
     }
 
-    #endregion
+#endregion
 
 }
