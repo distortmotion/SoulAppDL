@@ -30,7 +30,11 @@ public class Game : MonoBehaviour
     private void Start()
     {
         installButton.GetComponentInChildren<Text>().text = GameName;
+
+
     }
+
+
 
     public void LoadData()
     {
@@ -68,6 +72,7 @@ public class Game : MonoBehaviour
         Downloader.ArraySize = Files.Length.ToString();
         Downloader.SyncFileArray();
         Downloader.Starturl = Starturl;
+        SpecialScripts.Gamename = GameName;
         Debug.Log(Starturl + " is a fileserver location");
         Array.Copy(Files, Downloader.Files, Files.Length);
     }

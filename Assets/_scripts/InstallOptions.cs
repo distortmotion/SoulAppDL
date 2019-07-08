@@ -8,25 +8,17 @@ public class InstallOptions : MonoBehaviour
 {
 
     #region requirements
-    //public static string Savefolder;
-    //public InputField SavefolderInput;
-    //public Text savetext;
-    //public Dropdown drivelist;
-    //List<string> Alldrives = new List<string>();
-    //public static string GameName;
 
-
-    public GameObject Options,screen,Warning,installscreen;
-    public Button game1, game2, game3, game4;
+    public GameObject Options,Warning,installscreen;
  
     public InputField NicknameField;
-    public Text  RequiredSpaceField;
+    public Text RequiredSpaceField;
     public static string Nickname;
     public string RequiredSpace;
     public static string FreeSpace;
     private int FreeSpaceINT, RequiredSpaceINT;
     private IEnumerator ShowError;
-
+    public static bool Shortcut = false;
     #endregion
 
     public void OpenOptions()
@@ -36,10 +28,6 @@ public class InstallOptions : MonoBehaviour
         
         RequiredSpaceField.text = (RequiredSpace + " GB");
         Gamebuttons.Disable();
-
-
-
-       
     }
 
     public void CancelInstall()
@@ -47,6 +35,13 @@ public class InstallOptions : MonoBehaviour
         Gamebuttons.Enable();
         GetComponent<Canvas>().enabled = false;
 
+    }
+    public void MakeShortcut() {
+        Shortcut = !Shortcut;
+    }
+    public void ResetShortcut()
+    {
+        GetComponentInChildren<Toggle>().GetComponent<Toggle>().isOn = false;
     }
     public void SaveOptionsAndStartInstall()
     {
@@ -74,8 +69,6 @@ public class InstallOptions : MonoBehaviour
             Debug.Log("Saved all settings, starting");
             StartInstallation();
         }
-
-     
     }
 
     IEnumerator ShowErrorTimer()
@@ -87,15 +80,11 @@ public class InstallOptions : MonoBehaviour
     
     void StartInstallation()
     {
-        GetComponent<Canvas>().enabled = false;
         Debug.Log("Starting installation with name : " + Nickname);
-
-
+        GetComponent<Canvas>().enabled = false;
         DownloadGame downloader = GameObject.Find("Downloader").GetComponent<DownloadGame>();
         installscreen.GetComponent<Canvas>().enabled = true;
         downloader.GetComponent<DownloadGame>().StartDownloader();
-
-
     }
 
 }

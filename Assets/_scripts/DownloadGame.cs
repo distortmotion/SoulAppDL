@@ -112,7 +112,7 @@ public class DownloadGame : MonoBehaviour
 
     void DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
     {
-
+        
         if (e.Error == null)
         {
             DownloadNextFile();
@@ -121,18 +121,18 @@ public class DownloadGame : MonoBehaviour
         {
             //error message can't create temp folder
             ErrorMessageText.text = "Kan tijdelijke folder niet aanmaken";
-            Exitbutton.SetActive(true);
+            AbortDownload();
         }
         else if (e.Error.Message.Contains("The remote server returned an error: (404) Not Found."))
         {
             //error message can't find file
             ErrorMessageText.text = "Kan download niet vinden, neem contact op met Moxxi";
-            Exitbutton.SetActive(true);
+            AbortDownload();
         }
         else { Debug.Log("All OK"); }
 
     }
-
+      
     void DownloadNextFile()
     {
         if (i < (Files.Length))
@@ -155,28 +155,15 @@ public class DownloadGame : MonoBehaviour
 
     }
 
-    #region callback and exit fuctions
-
-    private void DownloadProgressCallback(object sender, DownloadProgressChangedEventArgs e)
+    private void AbortDownload()
     {
-        
-        progressBar.value = (e.ProgressPercentage);
-
+        Bar2Text ProgressBarText = GameObject.Find("InstallPanel").GetComponent<Bar2Text>();
+        ProgressBarText.Progressdone();
+        CleanUp();
+        DeleteGameFolder();
+        Exitbutton.SetActive(true);
     }
-
-     public void ExitInstallButton()
-    {
-
-        Exitbutton.SetActive(false);
-        ErrorMessageText.text = "";
-
-        installscreen.GetComponent<Canvas>().enabled = false;
-        Gamebuttons.Enable();
-
-    }
-
-    #endregion
-
+    
     void DownloadDone()
 
     {
@@ -189,6 +176,27 @@ public class DownloadGame : MonoBehaviour
 
 #endregion
     
+#region callback and exit fuction
+
+    private void DownloadProgressCallback(object sender, DownloadProgressChangedEventArgs e)
+    {
+
+        progressBar.value = (e.ProgressPercentage);
+
+    }
+
+    public void ExitInstallButton()
+    {
+
+        Exitbutton.SetActive(false);
+        ErrorMessageText.text = "";
+
+        installscreen.GetComponent<Canvas>().enabled = false;
+        Gamebuttons.Enable();
+
+    }
+#endregion
+
 #region Cleanup Temp Items after install
 
     public void CleanUp()
@@ -203,8 +211,14 @@ public class DownloadGame : MonoBehaviour
             DeleteTempFolder();
         }
         else {
-            SpecialScripts.SpecialScript();
+            SpecialScripts.SpecialUsernameRules();
         }
+    }
+
+    private void DeleteTempFiles(string F)
+    {
+        Debug.Log(TempSavePath + F);
+        File.Delete(TempSavePath + F);
     }
 
     private void DeleteTempFolder()
@@ -213,10 +227,12 @@ public class DownloadGame : MonoBehaviour
        
     }
 
-    private void DeleteTempFiles(string F)
+    private static void DeleteGameFolder()
     {
-        Debug.Log(TempSavePath + F);
-        File.Delete(TempSavePath + F);
+        if (Directory.GetFiles(Browser.Savefolder).Length == 0)
+        {
+            Directory.Delete(Browser.Savefolder);
+        }
     }
 
 #endregion

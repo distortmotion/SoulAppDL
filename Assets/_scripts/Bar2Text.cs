@@ -18,7 +18,7 @@ public class Bar2Text : MonoBehaviour
         InvokeRepeating("GetProgress", 0f, 0.01f); 
     }
 
-    void GetProgress()
+   public void GetProgress()
     {
         Debug.Log(progressbar.value.ToString());
         if(progressbar.value.ToString() == "100") {
@@ -32,7 +32,7 @@ public class Bar2Text : MonoBehaviour
         }
     }
 
-    void Progressdone()
+    public void Progressdone()
     {
         CancelInvoke("GetProgress");
     }
